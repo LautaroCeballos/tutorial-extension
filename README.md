@@ -1,48 +1,40 @@
 # tutorial-extension
 
-A MakeCode Arcade extension that adds a small set of beginner-friendly blocks under the **Tutorial** category. Use it as a starting point for tutorials and as a worked example of `//%`-annotated block definitions.
+Una extensión para MakeCode Arcade pensada como punto de partida para tutoriales. Añade una categoría **Tutorial** al editor con bloques para crear un personaje con física de plataforma y moverlo con el teclado.
 
 for PXT/TARGET
 
-## Blocks
+## Bloques
 
-### Getting started
+### Crear
 
-- ``on game start`` — event block. Code inside runs once when the game starts.
-- ``show message [text] for [ms] ms`` — display a message in a dialog for a fixed time.
+- ``establecer [personaje] como objeto [imagen] de tipo [tipo]`` — crea un sprite del tipo elegido (por defecto `Player`) en el centro de la pantalla, lo sigue con la cámara y le aplica física de plataforma (gravedad + colisión con el suelo).
 
-### Sprite helpers
+### Movimiento
 
-- ``spawn player with image [img]`` — creates a `Player` sprite at the center and stores it in the `player` variable.
-- ``[sprite] step [direction]`` — moves a sprite one tile (16 px) in a direction.
-- ``on [kind] overlap`` — event block. Code inside runs when two sprites of that kind overlap.
+- ``mover [personaje] a la izquierda y derecha con las flechas`` — activa el control lateral con las flechas izquierda/derecha a 80 px/frame.
+- ``saltar con [personaje] al presionar el botón A o la flecha arriba`` — salta cuando el personaje está apoyado en el suelo.
 
-### Math
-
-- ``clamp [value] between [min] and [max]`` — keeps a value inside a range.
-- ``random integer between [low] and [high]`` — random integer in the inclusive range.
-
-## Example
+## Ejemplo
 
 ```blocks
-tutorial.onStart(function () {
-    let p = tutorial.spawnPlayer(sprites.castle.princessFront0)
-    tutorial.showMessage("Go!", 1000)
-})
+namespace tutorial {
+    let nuevoPersonaje: Sprite
 
-controller.right.onEvent(ControllerButtonEvent.Pressed, function () {
-    tutorial.step(player, Direction.Right)
-})
+    tutorial.crearPersonaje(nuevoPersonaje, sprites.castle.princessFront0, SpriteKind.Player)
+    tutorial.moverConFlechas(nuevoPersonaje)
+    tutorial.saltarConA(nuevoPersonaje)
+}
 ```
 
-## Usage
+## Uso
 
-1. Import this repository into the MakeCode Arcade editor (Import URL → `https://github.com/LautaroCeballos/tutorial-extension`).
-2. The **Tutorial** category appears in the toolbox.
-3. Bump a release tag (`git tag v0.0.1 && git push origin v0.0.1`) so the editor can resolve a version.
+1. Importar este repositorio en el editor de MakeCode Arcade (Import URL → `https://github.com/LautaroCeballos/tutorial-extension`).
+2. La categoría **Tutorial** aparece en la caja de herramientas.
+3. Para que el editor pueda resolver la versión, hay un tag de release: `git tag v0.0.4 && git push origin v0.0.4`.
 
-For block-annotation reference see https://makecode.com/defining-blocks. For the full extension workflow see https://makecode.com/extensions/getting-started.
+Referencia de anotaciones: https://makecode.com/defining-blocks. Flujo completo de extensiones: https://makecode.com/extensions/getting-started.
 
-## License
+## Licencia
 
 MIT

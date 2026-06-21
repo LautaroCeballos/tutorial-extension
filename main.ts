@@ -2,136 +2,67 @@
  * Tutorial helpers for MakeCode Arcade.
  */
 //% color=190 weight=100 icon="\uf1ec" block="Tutorial"
-//% groups=['Getting started', 'Sprite helpers', 'Math', 'others']
+//% groups=['Crear', 'Movimiento', 'Mundo', 'others']
 namespace tutorial {
 
-    /**
-     * Cardinal direction for the step block.
-     */
-    enum StepDirection {
-        //% block="up"
-        Up = 1,
-        //% block="down"
-        Down = 2,
-        //% block="left"
-        Left = 3,
-        //% block="right"
-        Right = 4,
-    }
-
     // ---------------------------------------------------------------------
-    // Getting started
+    // Crear
     // ---------------------------------------------------------------------
 
     /**
-     * Run code once when the game starts.
-     * @param handler
+     * Crear un personaje como objeto de tipo Player con física de plataforma.
+     * @param imagen la imagen del personaje, eg: sprites.castle.princessFront0
      */
-    //% blockId=tutorial_on_start
-    //% block="on game start"
-    //% group="Getting started"
+    //% blockId=tutorial_crear_personaje
+    //% block="establecer $nuevoPersonaje como objeto $imagen de tipo $tipo"
+    //% group="Crear"
     //% weight=100
-    export function onStart(handler: () => void): void {
-        handler();
+    //% blockSetVariable=nuevoPersonaje
+    //% tipo.defl=SpriteKind.Player
+    export function crearPersonaje(nuevoPersonaje: Sprite, imagen: Image, tipo: number): Sprite {
+        const s = sprites.create(imagen, tipo);
+        scene.cameraFollowSprite(s);
+        controller.moveSprite(s, 80, 0);
+        s.ay = 300;
+        return s;
     }
 
+    // ---------------------------------------------------------------------
+    // Movimiento
+    // ---------------------------------------------------------------------
+
     /**
-     * Show a message on the screen for a short time.
-     * @param text the message, eg: "Hello!"
-     * @param ms how long to show it, eg: 1000
+     * Mover al personaje a la izquierda y derecha con las flechas.
+     * @param personaje
      */
-    //% blockId=tutorial_show_message
-    //% block="show message $text for $ms ms"
-    //% group="Getting started"
+    //% blockId=tutorial_mover_flechas
+    //% block="mover $personaje a la izquierda y derecha con las flechas"
+    //% group="Movimiento"
     //% weight=90
-    //% text.defl="Hello!"
-    //% ms.defl=1000
-    //% ms.min=0
-    export function showMessage(text: string, ms: number): void {
-        game.showLongText(text, DialogLayout.Center);
-        if (ms > 0) pause(ms);
+    export function moverConFlechas(personaje: Sprite): void {
+        controller.moveSprite(personaje, 80, 0);
     }
 
-    // ---------------------------------------------------------------------
-    // Sprite helpers
-    // ---------------------------------------------------------------------
-
     /**
-     * Spawn a player sprite of the given kind at the center of the screen.
-     * @param img the sprite image, eg: sprites.castle.princessFront0
+     * Saltar con el personaje al presionar el botón A o la flecha arriba.
+     * El personaje debe haber sido creado con crearPersonaje para tener
+     * la física de plataforma activa.
+     * @param personaje
      */
-    //% blockId=tutorial_spawn_player
-    //% block="spawn player with image $img"
-    //% group="Sprite helpers"
+    //% blockId=tutorial_saltar_a
+    //% block="saltar con $personaje al presionar el botón A o la flecha arriba"
+    //% group="Movimiento"
     //% weight=80
-    //% blockSetVariable=player
-    export function spawnPlayer(img: Image): Sprite {
-        return sprites.create(img, SpriteKind.Player);
-    }
-
-    /**
-     * Move a sprite one step in the given direction.
-     * @param sprite
-     * @param dir up, down, left or right
-     */
-    //% blockId=tutorial_step
-    //% block="$sprite step $dir"
-    //% group="Sprite helpers"
-    //% weight=70
-    export function step(sprite: Sprite, dir: StepDirection): void {
-        const v = 16;
-        switch (dir) {
-            case StepDirection.Up:    sprite.y -= v; break;
-            case StepDirection.Down:  sprite.y += v; break;
-            case StepDirection.Left:  sprite.x -= v; break;
-            case StepDirection.Right: sprite.x += v; break;
-        }
-    }
-
-    /**
-     * Run code whenever two sprites of the same kind overlap.
-     * @param kind
-     * @param handler
-     */
-    //% blockId=tutorial_on_overlap
-    //% block="on $kind overlap"
-    //% group="Sprite helpers"
-    //% weight=60
-    //% kind.defl=SpriteKind.Player
-    export function onOverlap(kind: number, handler: (sprite: Sprite, other: Sprite) => void): void {
-        sprites.onOverlap(kind, kind, handler);
-    }
-
-    // ---------------------------------------------------------------------
-    // Math
-    // ---------------------------------------------------------------------
-
-    /**
-     * Clamp a value into a [min, max] range.
-     * @param value the value, eg: 120
-     * @param min the minimum, eg: 0
-     * @param max the maximum, eg: 100
-     */
-    //% blockId=tutorial_clamp
-    //% block="clamp $value between $min and $max"
-    //% group="Math"
-    //% weight=50
-    export function clamp(value: number, min: number, max: number): number {
-        return Math.max(min, Math.min(max, value));
-    }
-
-    /**
-     * Pick a random integer in the inclusive range [low, high].
-     * @param low the lower bound, eg: 1
-     * @param high the upper bound, eg: 6
-     */
-    //% blockId=tutorial_random_int
-    //% block="random integer between $low and $high"
-    //% group="Math"
-    //% weight=40
-    //% low.defl=1
-    //% high.defl=6
-    export function randomInt(low: number, high: number): number {
-        return randint(low, high);
+    export function saltarConA(personaje: Sprite): void {
+        controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
+            if (personaje.isHittingTile(CollisionDirection.Bottom)) {
+                personaje.vy = -150;
+            }
+        });
+        controller.up.onEvent(ControllerButtonEvent.Pressed, function () {
+            if (personaje.isHittingTile(CollisionDirection.Bottom)) {
+                personaje.vy = -150;
+            }
+        });
     }
 }

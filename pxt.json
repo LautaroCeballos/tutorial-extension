@@ -1,6 +1,6 @@
 {
     "name": "tutorial-extension",
-    "version": "0.0.3",
+    "version": "0.0.4",
     "description": "A MakeCode Arcade extension used as a starting point for tutorials.",
     "license": "MIT",
     "authors": [],
