@@ -1,0 +1,24 @@
+{
+    "name": "tutorial-extension",
+    "version": "0.0.0",
+    "description": "A MakeCode Arcade extension used as a starting point for tutorials.",
+    "license": "MIT",
+    "authors": [],
+    "public": true,
+    "dependencies": {
+        "core": "*"
+    },
+    "files": [
+        "main.ts",
+        "README.md"
+    ],
+    "testFiles": [
+        "tests/main.ts"
+    ],
+    "testDependencies": {
+        "core": "*"
+    },
+    "targetVersions": {
+        "arcade": "*"
+    }
+}
