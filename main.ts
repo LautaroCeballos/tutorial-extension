@@ -5,6 +5,20 @@
 //% groups=['Getting started', 'Sprite helpers', 'Math', 'others']
 namespace tutorial {
 
+    /**
+     * Cardinal direction for the step block.
+     */
+    enum StepDirection {
+        //% block="up"
+        Up = 1,
+        //% block="down"
+        Down = 2,
+        //% block="left"
+        Left = 3,
+        //% block="right"
+        Right = 4,
+    }
+
     // ---------------------------------------------------------------------
     // Getting started
     // ---------------------------------------------------------------------
@@ -64,14 +78,13 @@ namespace tutorial {
     //% block="$sprite step $dir"
     //% group="Sprite helpers"
     //% weight=70
-    //% dir.defl=Direction.Right
-    export function step(sprite: Sprite, dir: Direction): void {
+    export function step(sprite: Sprite, dir: StepDirection): void {
         const v = 16;
         switch (dir) {
-            case Direction.Up:    sprite.y -= v; break;
-            case Direction.Down:  sprite.y += v; break;
-            case Direction.Left:  sprite.x -= v; break;
-            case Direction.Right: sprite.x += v; break;
+            case StepDirection.Up:    sprite.y -= v; break;
+            case StepDirection.Down:  sprite.y += v; break;
+            case StepDirection.Left:  sprite.x -= v; break;
+            case StepDirection.Right: sprite.x += v; break;
         }
     }
 
