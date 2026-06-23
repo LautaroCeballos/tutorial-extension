@@ -1,7 +1,7 @@
 {
     "name": "tutorial-extension",
-    "version": "0.1.0",
-    "description": "A MakeCode Arcade extension used as a starting point for tutorials.",
+    "version": "0.1.1",
+    "description": "MakeCode Arcade extension with simple Spanish blocks for building football games.",
     "license": "MIT",
     "authors": [],
     "public": true,
