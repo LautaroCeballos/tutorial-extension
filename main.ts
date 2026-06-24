@@ -17,6 +17,7 @@ namespace SpriteKind {
 namespace arcadeFacil {
 
     let porteriaActual: Sprite = null
+    let juegoTerminado = false
 
     export enum ResultadoJuego {
         //% block="ganaste"
@@ -92,6 +93,26 @@ namespace arcadeFacil {
         porteriaActual.z = 10
     }
 
+    function finalizarJuego(resultado: ResultadoJuego): void {
+        if (juegoTerminado) {
+            return
+        }
+
+        juegoTerminado = true
+
+        if (resultado == ResultadoJuego.Ganaste) {
+            game.setGameOverPlayable(true, music.melodyPlayable(music.powerUp), false)
+            game.setGameOverMessage(true, "Ganaste la copa del mundo!!!")
+            game.setGameOverEffect(true, effects.confetti)
+            game.gameOver(true)
+        } else {
+            game.setGameOverPlayable(false, music.melodyPlayable(music.wawawawaa), false)
+            game.setGameOverMessage(false, "Oh no, el arquedo gano de nuevo")
+            game.setGameOverEffect(false, effects.dissolve)
+            game.gameOver(false)
+        }
+    }
+
     /**
      * Establece el fondo de penales.
      * También crea la portería, reinicia el puntaje en 0 y establece 3 vidas.
@@ -105,6 +126,7 @@ namespace arcadeFacil {
         crearPorteria()
         info.setScore(0)
         info.setLife(3)
+        juegoTerminado = false
     }
 
     /**
@@ -205,7 +227,7 @@ namespace arcadeFacil {
     }
 
     /**
-     * Resta vidas, reproduce sonido y opcionalmente elimina una pelota.
+     * Resta vidas, reproduce sonido knock y opcionalmente elimina una pelota.
      */
     //% blockId=arcadefacil_restar_vidas
     //% block="restar vidas en $vidas || y eliminar $pelota"
@@ -217,7 +239,7 @@ namespace arcadeFacil {
     //% inlineInputMode=inline
     export function restarVidas(vidas: number, pelota: Sprite = null): void {
         info.changeLifeBy(-vidas)
-        music.wawawawaa.play()
+        music.knock.play()
 
         if (pelota) {
             pelota.destroy(effects.disintegrate, 100)
@@ -225,7 +247,8 @@ namespace arcadeFacil {
     }
 
     /**
-     * Termina el juego cuando se llega a cierto puntaje.
+     * Termina el juego automáticamente cuando se llega a cierto puntaje.
+     * No necesita estar dentro de un bloque para siempre.
      */
     //% blockId=arcadefacil_si_llegas_a_puntaje
     //% block="si llegas a puntaje $puntaje entonces $resultado"
@@ -234,14 +257,8 @@ namespace arcadeFacil {
     //% resultado.defl=ResultadoJuego.Ganaste
     //% inlineInputMode=inline
     export function siLlegasAPuntaje(puntaje: number, resultado: ResultadoJuego): void {
-        if (info.score() >= puntaje) {
-            if (resultado == ResultadoJuego.Ganaste) {
-                game.splash("GOOOL", "Ganaste la copa del mundo!!!")
-                game.over(true, effects.confetti)
-            } else {
-                game.splash("PERDISTE", "El arquero gano esta vez")
-                game.over(false, effects.dissolve)
-            }
-        }
+        info.onScore(puntaje, function () {
+            finalizarJuego(resultado)
+        })
     }
-}
+} 
