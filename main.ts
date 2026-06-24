@@ -6,15 +6,17 @@ namespace SpriteKind {
     export const Arquero = SpriteKind.create()
 
     //% isKind
-    export const Arco = SpriteKind.create()
+    export const Porteria = SpriteKind.create()
 }
 
 /**
  * Bloques simples para crear juegos de fútbol en MakeCode Arcade.
  */
 //% color="#0F766E" weight=100 icon="\uf1e3" block="World Cup 2026"
-//% groups=['Crear Sprites', 'Mover Sprites', 'Escenarios', 'Crear Proyectiles', 'Informacion']
+//% groups=['Inicializacion', 'Crear Sprites', 'Mover Sprites', 'Crear Proyectiles', 'Informacion']
 namespace arcadeFacil {
+
+    let porteriaActual: Sprite = null
 
     export enum ResultadoJuego {
         //% block="ganaste"
@@ -44,33 +46,65 @@ namespace arcadeFacil {
     function crearFondoDePenales(colorFondo: number): Image {
         let fondo = image.create(160, 120)
 
-        // Fondo de color seleccionado
         fondo.fill(colorFondo)
 
-        // Color blanco para las líneas
         let blanco = 1
 
-        // Línea superior del campo
         fondo.drawLine(0, 12, 159, 12, blanco)
 
-        // Líneas laterales grandes
         fondo.drawLine(6, 13, 6, 108, blanco)
         fondo.drawLine(152, 13, 152, 108, blanco)
 
-        // Área chica / zona de penal
         fondo.drawLine(24, 13, 24, 66, blanco)
         fondo.drawLine(134, 13, 134, 66, blanco)
         fondo.drawLine(24, 66, 134, 66, blanco)
 
-        // Línea inferior del área
         fondo.drawLine(6, 108, 152, 108, blanco)
 
-        // Punto de penalti
         fondo.setPixel(80, 77, blanco)
         fondo.drawLine(78, 78, 82, 78, blanco)
         fondo.setPixel(80, 79, blanco)
 
         return fondo
+    }
+
+    function crearImagenPorteria(): Image {
+        let porteria = image.create(60, 16)
+
+        porteria.fill(0)
+
+        let blanco = 1
+
+        porteria.fillRect(0, 0, 60, 3, blanco)
+        porteria.fillRect(0, 3, 3, 13, blanco)
+        porteria.fillRect(57, 3, 3, 13, blanco)
+
+        return porteria
+    }
+
+    function crearPorteria(): void {
+        if (porteriaActual) {
+            porteriaActual.destroy()
+        }
+
+        porteriaActual = sprites.create(crearImagenPorteria(), SpriteKind.Porteria)
+        porteriaActual.setPosition(80, 10)
+        porteriaActual.z = 10
+    }
+
+    /**
+     * Establece el fondo de penales.
+     * También crea la portería, reinicia el puntaje en 0 y establece 3 vidas.
+     */
+    //% blockId=arcadefacil_establecer_fondo_penales
+    //% block="establecer fondo de penales estilo $color"
+    //% group="Inicializacion"
+    //% color.defl=FondoPenales.CespedClasico
+    export function establecerFondoDePenales(color: FondoPenales): void {
+        scene.setBackgroundImage(crearFondoDePenales(color))
+        crearPorteria()
+        info.setScore(0)
+        info.setLife(3)
     }
 
     /**
@@ -131,18 +165,6 @@ namespace arcadeFacil {
     }
 
     /**
-     * Establece un fondo predeterminado de penales.
-     * El selector permite cambiar el estilo visual del fondo.
-     */
-    //% blockId=arcadefacil_establecer_fondo_penales
-    //% block="establecer fondo de penales estilo $color"
-    //% group="Escenarios"
-    //% color.defl=FondoPenales.CespedClasico
-    export function establecerFondoDePenales(color: FondoPenales): void {
-        scene.setBackgroundImage(crearFondoDePenales(color))
-    }
-
-    /**
      * Crea una pelota/proyectil desde un sprite.
      * El alumno escribe VY positivo.
      * Internamente se invierte para que la pelota suba.
@@ -160,20 +182,6 @@ namespace arcadeFacil {
         let pelota = sprites.createProjectileFromSprite(imagen, mySprite, 0, -vy)
         pelota.setKind(SpriteKind.Pelota)
         return pelota
-    }
-
-    /**
-     * Establece las vidas y el puntaje inicial.
-     */
-    //% blockId=arcadefacil_establecer_vidas_y_puntaje
-    //% block="establecer vidas en $vidas y puntaje en $puntaje"
-    //% group="Informacion"
-    //% vidas.min=1 vidas.max=10 vidas.defl=3
-    //% puntaje.min=0 puntaje.max=100 puntaje.defl=0
-    //% inlineInputMode=inline
-    export function establecerVidasYPuntaje(vidas: number, puntaje: number): void {
-        info.setLife(vidas)
-        info.setScore(puntaje)
     }
 
     /**
