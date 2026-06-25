@@ -6,26 +6,24 @@ namespace SpriteKind {
     export const Arquero = SpriteKind.create()
 
     //% isKind
-    export const Porteria = SpriteKind.create()
+    export const Arco = SpriteKind.create()
 }
 
 /**
  * Bloques simples para crear juegos de fútbol en MakeCode Arcade.
  */
-//% color="#0F766E" weight=100 icon="\uf1e3" block="World Cup 2026"
-//% groups=['Inicializacion', 'Crear Sprites', 'Mover Sprites', 'Crear Proyectiles', 'Informacion']
+//% color="#0F766E" weight=100 icon="\uf1e3" block="Mundial 2026"
+//% groups=['Inicializacion', 'Crear Sprites', 'Mover Sprites', 'Proyectiles', 'Informacion']
 namespace arcadeFacil {
 
-    let porteriaActual: Sprite = null
+    let arcoActual: Sprite = null
     let juegoTerminado = false
 
-    export enum ResultadoJuego {
-        //% block="ganaste"
-        Ganaste,
-
-        //% block="perdiste"
-        Perdiste
-    }
+    let arqueroInteligente: Sprite = null
+    let velocidadArquero = 60
+    let inteligenciaArquero = false
+    let actualizacionArqueroRegistrada = false
+    let eventoVidasCeroRegistrado = false
 
     export enum FondoPenales {
         //% block="Césped clásico"
@@ -69,53 +67,118 @@ namespace arcadeFacil {
         return fondo
     }
 
-    function crearImagenPorteria(): Image {
-        let porteria = image.create(60, 16)
+    function crearImagenArco(): Image {
+        let arco = image.create(60, 16)
 
-        porteria.fill(0)
+        arco.fill(0)
 
         let blanco = 1
 
-        porteria.fillRect(0, 0, 60, 3, blanco)
-        porteria.fillRect(0, 3, 3, 13, blanco)
-        porteria.fillRect(57, 3, 3, 13, blanco)
+        arco.fillRect(0, 0, 60, 3, blanco)
+        arco.fillRect(0, 3, 3, 13, blanco)
+        arco.fillRect(57, 3, 3, 13, blanco)
 
-        return porteria
+        return arco
     }
 
-    function crearPorteria(): void {
-        if (porteriaActual) {
-            porteriaActual.destroy()
+    function crearArco(): void {
+        if (arcoActual) {
+            arcoActual.destroy()
         }
 
-        porteriaActual = sprites.create(crearImagenPorteria(), SpriteKind.Porteria)
-        porteriaActual.setPosition(80, 10)
-        porteriaActual.z = 10
+        arcoActual = sprites.create(crearImagenArco(), SpriteKind.Arco)
+        arcoActual.setPosition(80, 10)
+        arcoActual.z = 10
     }
 
-    function finalizarJuego(resultado: ResultadoJuego): void {
+    function obtenerPelota(): Sprite {
+        let pelotas = sprites.allOfKind(SpriteKind.Pelota)
+
+        if (pelotas.length > 0) {
+            return pelotas[0]
+        }
+
+        return null
+    }
+
+    function registrarActualizacionArquero(): void {
+        if (actualizacionArqueroRegistrada) {
+            return
+        }
+
+        actualizacionArqueroRegistrada = true
+
+        game.onUpdate(function () {
+            if (!arqueroInteligente) {
+                return
+            }
+
+            if (!inteligenciaArquero) {
+                if (arqueroInteligente.vx == 0) {
+                    arqueroInteligente.vx = velocidadArquero
+                }
+
+                return
+            }
+
+            let pelota = obtenerPelota()
+
+            if (pelota) {
+                let velocidadMejorada = velocidadArquero + info.score() * 8
+
+                if (velocidadMejorada > 150) {
+                    velocidadMejorada = 150
+                }
+
+                if (pelota.x > arqueroInteligente.x + 2) {
+                    arqueroInteligente.vx = velocidadMejorada
+                } else if (pelota.x < arqueroInteligente.x - 2) {
+                    arqueroInteligente.vx = -velocidadMejorada
+                } else {
+                    arqueroInteligente.vx = 0
+                }
+            } else {
+                if (arqueroInteligente.vx == 0) {
+                    arqueroInteligente.vx = velocidadArquero
+                }
+            }
+        })
+    }
+
+    function registrarGameOverPorVidas(): void {
+        if (eventoVidasCeroRegistrado) {
+            return
+        }
+
+        eventoVidasCeroRegistrado = true
+
+        info.onLifeZero(function () {
+            if (juegoTerminado) {
+                return
+            }
+
+            juegoTerminado = true
+            music.wawawawaa.play()
+            game.setGameOverMessage(false, "Oh no, el arquedo gano de nuevo")
+            game.setGameOverEffect(false, effects.dissolve)
+            game.gameOver(false)
+        })
+    }
+
+    function finalizarJuegoGanado(): void {
         if (juegoTerminado) {
             return
         }
 
         juegoTerminado = true
-
-        if (resultado == ResultadoJuego.Ganaste) {
-            game.setGameOverPlayable(true, music.melodyPlayable(music.powerUp), false)
-            game.setGameOverMessage(true, "Ganaste la copa del mundo!!!")
-            game.setGameOverEffect(true, effects.confetti)
-            game.gameOver(true)
-        } else {
-            game.setGameOverPlayable(false, music.melodyPlayable(music.wawawawaa), false)
-            game.setGameOverMessage(false, "Oh no, el arquedo gano de nuevo")
-            game.setGameOverEffect(false, effects.dissolve)
-            game.gameOver(false)
-        }
+        game.setGameOverMessage(true, "Ganaste la copa del mundo!!!")
+        game.setGameOverEffect(true, effects.confetti)
+        game.gameOver(true)
     }
 
     /**
      * Establece el fondo de penales.
-     * También crea la portería, reinicia el puntaje en 0 y establece 3 vidas.
+     * También crea el arco, reinicia el puntaje en 0 y establece 3 vidas.
      */
     //% blockId=arcadefacil_establecer_fondo_penales
     //% block="establecer fondo de penales estilo $color"
@@ -123,10 +186,13 @@ namespace arcadeFacil {
     //% color.defl=FondoPenales.CespedClasico
     export function establecerFondoDePenales(color: FondoPenales): void {
         scene.setBackgroundImage(crearFondoDePenales(color))
-        crearPorteria()
+        crearArco()
         info.setScore(0)
         info.setLife(3)
         juegoTerminado = false
+        game.setGameOverMessage(false, "Oh no, el arquedo gano de nuevo")
+        game.setGameOverEffect(false, effects.dissolve)
+        registrarGameOverPorVidas()
     }
 
     /**
@@ -152,55 +218,78 @@ namespace arcadeFacil {
 
     /**
      * Mueve un sprite con los botones.
-     * El movimiento es horizontal.
-     * La velocidad queda oculta detrás del botón (+).
+     * Por defecto se mueve solo de izquierda a derecha.
+     * En el botón (+) se puede activar el movimiento en 4 direcciones.
      */
     //% blockId=arcadefacil_mover_con_botones
-    //% block="mover $mySprite con botones || con velocidad $velocidad"
+    //% block="mover $mySprite con botones || movimiento en 4 direcciones $cuatroDirecciones con velocidad $velocidad"
     //% group="Mover Sprites"
     //% mySprite.shadow=variables_get
     //% mySprite.defl=mySprite
+    //% cuatroDirecciones.shadow=toggleOnOff
+    //% cuatroDirecciones.defl=false
     //% velocidad.min=0 velocidad.max=200 velocidad.defl=100
     //% expandableArgumentMode="toggle"
     //% inlineInputMode=inline
-    export function moverConBotones(mySprite: Sprite, velocidad: number = 100): void {
-        controller.moveSprite(mySprite, velocidad, 0)
+    export function moverConBotones(mySprite: Sprite, cuatroDirecciones: boolean = false, velocidad: number = 100): void {
+        if (cuatroDirecciones) {
+            controller.moveSprite(mySprite, velocidad, velocidad)
+        } else {
+            controller.moveSprite(mySprite, velocidad, 0)
+        }
+
         mySprite.setStayInScreen(true)
     }
 
     /**
      * Mueve un sprite automáticamente.
-     * El movimiento es horizontal y rebota en las paredes.
+     * La inteligencia del arquero queda oculta detrás del botón (+).
      */
     //% blockId=arcadefacil_mover_automatico
-    //% block="mover $mySprite automáticamente con velocidad $velocidad"
+    //% block="mover $mySprite automáticamente con velocidad $velocidad || inteligencia del arquero $inteligencia"
     //% group="Mover Sprites"
     //% mySprite.shadow=variables_get
     //% mySprite.defl=mySprite
     //% velocidad.min=0 velocidad.max=200 velocidad.defl=60
+    //% inteligencia.shadow=toggleOnOff
+    //% inteligencia.defl=false
+    //% expandableArgumentMode="toggle"
     //% inlineInputMode=inline
-    export function moverAutomatico(mySprite: Sprite, velocidad: number): void {
+    export function moverAutomatico(mySprite: Sprite, velocidad: number, inteligencia: boolean = false): void {
         mySprite.vx = velocidad
         mySprite.vy = 0
         mySprite.setBounceOnWall(true)
         mySprite.setStayInScreen(true)
+
+        arqueroInteligente = mySprite
+        velocidadArquero = velocidad
+        inteligenciaArquero = inteligencia
+
+        registrarActualizacionArquero()
     }
 
     /**
      * Crea una pelota/proyectil desde un sprite.
      * El alumno escribe VY positivo.
      * Internamente se invierte para que la pelota suba.
+     * Solo puede existir una pelota al mismo tiempo.
      */
     //% blockId=arcadefacil_crear_pelota
     //% block="crear pelota con imagen $imagen desde $mySprite con VY $vy"
     //% blockSetVariable=pelota
-    //% group="Crear Proyectiles"
+    //% group="Proyectiles"
     //% imagen.shadow=image_picker
     //% mySprite.shadow=variables_get
     //% mySprite.defl=mySprite
-    //% vy.min=0 vy.max=200 vy.defl=0
+    //% vy.min=0 vy.max=200 vy.defl=50
     //% inlineInputMode=inline
-    export function crearPelota(imagen: Image, mySprite: Sprite, vy: number): Sprite {
+    export function crearPelota(imagen: Image, mySprite: Sprite, vy: number = 50): Sprite {
+        let pelotaExistente = obtenerPelota()
+
+        if (pelotaExistente) {
+            return pelotaExistente
+        }
+
         let pelota = sprites.createProjectileFromSprite(imagen, mySprite, 0, -vy)
         pelota.setKind(SpriteKind.Pelota)
         return pelota
@@ -251,14 +340,13 @@ namespace arcadeFacil {
      * No necesita estar dentro de un bloque para siempre.
      */
     //% blockId=arcadefacil_si_llegas_a_puntaje
-    //% block="si llegas a puntaje $puntaje entonces $resultado"
+    //% block="si llegas al puntaje $puntaje entonces GANASTE"
     //% group="Informacion"
     //% puntaje.min=1 puntaje.max=100 puntaje.defl=5
-    //% resultado.defl=ResultadoJuego.Ganaste
     //% inlineInputMode=inline
-    export function siLlegasAPuntaje(puntaje: number, resultado: ResultadoJuego): void {
+    export function siLlegasAPuntaje(puntaje: number): void {
         info.onScore(puntaje, function () {
-            finalizarJuego(resultado)
+            finalizarJuegoGanado()
         })
     }
-} 
+}
