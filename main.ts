@@ -200,7 +200,7 @@ namespace arcadeFacil {
      * El sprite permanece automáticamente dentro de la pantalla.
      */
     //% blockId=arcadefacil_crear_sprite
-    //% block="crear sprite con imagen $imagen en x $x y $y de tipo $tipo"
+    //% block="personaje con imagen $imagen en x $x y $y de tipo $tipo"
     //% blockSetVariable=mySprite
     //% group="Crear Sprites"
     //% imagen.shadow=image_picker
@@ -224,6 +224,7 @@ namespace arcadeFacil {
     //% blockId=arcadefacil_mover_con_botones
     //% block="mover $mySprite con botones || movimiento en 4 direcciones $cuatroDirecciones con velocidad $velocidad"
     //% group="Mover Sprites"
+    //% weight=110
     //% mySprite.shadow=variables_get
     //% mySprite.defl=mySprite
     //% cuatroDirecciones.shadow=toggleOnOff
@@ -275,7 +276,7 @@ namespace arcadeFacil {
      * Solo puede existir una pelota al mismo tiempo.
      */
     //% blockId=arcadefacil_crear_pelota
-    //% block="crear pelota con imagen $imagen desde $mySprite con VY $vy"
+    //% block="pelota con imagen $imagen desde $mySprite con velocidad $vy"
     //% blockSetVariable=pelota
     //% group="Proyectiles"
     //% imagen.shadow=image_picker
@@ -296,19 +297,18 @@ namespace arcadeFacil {
     }
 
     /**
-     * Suma puntos al puntaje, reproduce sonido y opcionalmente elimina una pelota.
+     * Suma puntos al puntaje, reproduce sonido y elimina una pelota.
      */
     //% blockId=arcadefacil_sumar_puntos
-    //% block="sumar puntos por $puntos || y eliminar $pelota"
+    //% block="aumentar el puntaje por $puntos"
     //% group="Informacion"
     //% puntos.min=1 puntos.max=100 puntos.defl=1
-    //% pelota.shadow=variables_get
-    //% pelota.defl=pelota
-    //% expandableArgumentMode="toggle"
     //% inlineInputMode=inline
-    export function sumarPuntos(puntos: number, pelota: Sprite = null): void {
+    export function sumarPuntos(puntos: number): void {
         info.changeScoreBy(puntos)
         music.baDing.play()
+
+        let pelota = obtenerPelota()
 
         if (pelota) {
             pelota.destroy(effects.confetti, 100)
@@ -316,19 +316,18 @@ namespace arcadeFacil {
     }
 
     /**
-     * Resta vidas, reproduce sonido knock y opcionalmente elimina una pelota.
+     * Resta vidas, reproduce sonido knock y elimina una pelota.
      */
     //% blockId=arcadefacil_restar_vidas
-    //% block="restar vidas en $vidas || y eliminar $pelota"
+    //% block="restar vidas en $vidas"
     //% group="Informacion"
     //% vidas.min=1 vidas.max=10 vidas.defl=1
-    //% pelota.shadow=variables_get
-    //% pelota.defl=pelota
-    //% expandableArgumentMode="toggle"
     //% inlineInputMode=inline
-    export function restarVidas(vidas: number, pelota: Sprite = null): void {
+    export function restarVidas(vidas: number): void {
         info.changeLifeBy(-vidas)
         music.knock.play()
+
+        let pelota = obtenerPelota()
 
         if (pelota) {
             pelota.destroy(effects.disintegrate, 100)
@@ -342,6 +341,7 @@ namespace arcadeFacil {
     //% blockId=arcadefacil_si_llegas_a_puntaje
     //% block="si llegas al puntaje $puntaje entonces GANASTE"
     //% group="Informacion"
+    //% weight=10
     //% puntaje.min=1 puntaje.max=100 puntaje.defl=5
     //% inlineInputMode=inline
     export function siLlegasAPuntaje(puntaje: number): void {
